@@ -21,10 +21,10 @@ start:
   movw    %ax,%es             # -> Extra Segment
   movw    %ax,%ss             # -> Stack Segment
 
-  # Enable A20:
-  #   For backwards compatibility with the earliest PCs, physical
-  #   address line 20 is tied low, so that addresses higher than
-  #   1MB wrap around to zero by default.  This code undoes this.
+# Enable A20:
+#   For backwards compatibility with the earliest PCs, physical
+#   address line 20 is tied low, so that addresses higher than
+#   1MB wrap around to zero by default.  This code undoes this.
 seta20.1:
   inb     $0x64,%al               # Wait for not busy
   testb   $0x2,%al
@@ -72,12 +72,12 @@ protcseg:
 spin:
   jmp spin
 
-# Bootstrap GDT
+# boot所有3个段
 .p2align 2                                # force 4 byte alignment
 gdt:
-  SEG_NULL				# null seg
-  SEG(STA_X|STA_R, 0x0, 0xffffffff)	# code seg
-  SEG(STA_W, 0x0, 0xffffffff)	        # data seg
+  SEG_NULL				                        # null seg
+  SEG(STA_X|STA_R, 0x0, 0xffffffff)	      # code seg
+  SEG(STA_W, 0x0, 0xffffffff)	            # data seg
 
 gdtdesc:
   .word   0x17                            # sizeof(gdt) - 1 #不是个数，是字节数

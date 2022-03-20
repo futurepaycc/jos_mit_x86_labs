@@ -1,9 +1,9 @@
 {
     "files.associations": {
-        "*.html": "html",
-        "*.py": "python",
         "*.s": "asm-collection",
         "*.cuf": "FortranFreeForm",
+        "*.html": "html",
+        "*.py": "python",
         "module.h": "c",
         "stat.h": "c",
         "list.h": "c",
@@ -22,6 +22,7 @@
         "quota.h": "c",
         "syscall.h": "c",
         "x86.h": "c",
-        "kclock.h": "c"
+        "kclock.h": "c",
+        "mmu.h": "c"
     }
 }

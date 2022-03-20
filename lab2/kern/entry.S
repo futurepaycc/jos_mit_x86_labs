@@ -13,6 +13,10 @@
 #	
 # RELOC(x) maps a symbol x from its link address to its actual
 # location in physical memory (its load address).	 
+#
+# 内核代码被link脚本链接在 (KERNBASE + 1 Meg)的虚拟段内存地址
+# 但是booter实际加载内核在1M物理内存地址处
+# 下面的RELOC宏就是将这个段虚拟地址还原为物理地址
 # ##################################################################
 
 #define	RELOC(x) ((x) - KERNBASE)
@@ -23,10 +27,9 @@
 
 # ##################################################################
 # entry point
+# 入口及多重引导头
 # ##################################################################
-
 .text
-
 # The Multiboot header
 .align 4
 .long MULTIBOOT_HEADER_MAGIC
@@ -54,6 +57,9 @@ entry:
 
 	# Load the physical address of entry_pgdir into cr3.  entry_pgdir
 	# is defined in entrypgdir.c.
+
+	# 下面加载内核初始化时定义的临时 4M 虚拟页目录，由RELOC还原出真实物理地址
+	# 1. 物理地址存入cr3, 2. 打开cr0的页控制位
 	movl	$(RELOC(entry_pgdir)), %eax
 	movl	%eax, %cr3
 	# Turn on paging.
@@ -64,19 +70,22 @@ entry:
 	# Now paging is enabled, but we're still running at a low EIP
 	# (why is this okay?).  Jump up above KERNBASE before entering
 	# C code.
+	# 已开启页访问，下面及c语言中已是虚拟页计址，需要跳转过去
 	mov	$relocated, %eax
 	jmp	*%eax
-relocated:
 
+# 此处已开始使用虚拟页地址计址
+relocated:
 	# Clear the frame pointer register (EBP)
 	# so that once we get into debugging C code,
 	# stack backtraces will be terminated properly.
+	# 初始化页帧寄存器
 	movl	$0x0,%ebp			# nuke frame pointer
-
 	# Set the stack pointer
+	# 初始化栈指针寄存器
 	movl	$(bootstacktop),%esp
-
 	# now to C code
+	# 控制权转移到c语言
 	call	i386_init
 
 	# Should never get here, but in case we do, just spin.
@@ -87,10 +96,10 @@ spin:	jmp	spin
 # ##################################################################
 # boot stack
 # ##################################################################
-	.p2align	PGSHIFT		# force page alignment
+	.p2align	PGSHIFT		# 强制页对齐, PGSHIFT = 12, 2^12 = 4k = PGSIZE
 	.globl		bootstack
 bootstack:
-	.space		KSTKSIZE
+	.space		KSTKSIZE	# 8*PGSIZE, 内核初始栈8页大小
 	.globl		bootstacktop   
 bootstacktop:
 
