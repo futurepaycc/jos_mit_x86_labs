@@ -9,13 +9,13 @@
 #include <kern/pmap.h>
 
 // These variables are set by i386_detect_memory()
-size_t npages;                 // Amount of physical memory (in pages)
-static size_t npages_basemem;  // Amount of base memory (in pages)
+size_t npages;                              // Amount of physical memory (in pages)
+static size_t npages_basemem;               // Amount of base memory (in pages)
 
 // These variables are set in mem_init()
-pde_t *kern_pgdir;                       // Kernel's initial page directory
-struct PageInfo *pages;                  // Physical page state array
-static struct PageInfo *page_free_list;  // Free list of physical pages
+pde_t *kern_pgdir;                          // Kernel's initial page directory
+struct PageInfo *pages;                     // Physical page state array
+static struct PageInfo *page_free_list;     // Free list of physical pages
 
 // --------------------------------------------------------------
 // Detect machine's physical memory setup.
@@ -328,8 +328,7 @@ void page_decref(struct PageInfo *pp) {
 // Hint 3: look at inc/mmu.h for useful macros that mainipulate page
 // table and page directory entries.
 //
-pte_t *
-pgdir_walk(pde_t *pgdir, const void *va, int create) {
+pte_t * pgdir_walk(pde_t *pgdir, const void *va, int create) {
     int dindex = PDX(va), tindex = PTX(va);
     // dir index, table index
     if (!(pgdir[dindex] & PTE_P)) {  // if pde not exist
@@ -672,6 +671,8 @@ static physaddr_t check_va2pa(pde_t *pgdir, uintptr_t va) {
         return ~0;
     return PTE_ADDR(p[PTX(va)]);
 }
+
+/* -----------------------------------以下为内存管理的测试代码----------------------------------- */
 
 // check page_insert, page_remove, &c
 static void check_page(void) {
