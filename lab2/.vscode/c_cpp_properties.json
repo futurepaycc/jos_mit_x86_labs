@@ -4,8 +4,6 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/",
-                "${workspaceFolder}/net/lwip/include",
-                "${workspaceFolder}/net/lwip/jos"
             ],
             "defines": [
                 "JOS_KERNEL=1"
