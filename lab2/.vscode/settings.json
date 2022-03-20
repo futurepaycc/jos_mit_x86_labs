@@ -23,6 +23,7 @@
         "syscall.h": "c",
         "x86.h": "c",
         "kclock.h": "c",
-        "mmu.h": "c"
+        "mmu.h": "c",
+        "pmap.h": "c"
     }
 }

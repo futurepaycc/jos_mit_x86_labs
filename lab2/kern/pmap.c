@@ -39,11 +39,9 @@ static void i386_detect_memory(void) {
         npages = (EXTPHYSMEM / PGSIZE) + npages_extmem;
     else
         npages = npages_basemem;
-
-    cprintf("Physical memory: %uK available, base = %uK, extended = %uK\n",
-            npages * PGSIZE / 1024,
-            npages_basemem * PGSIZE / 1024,
-            npages_extmem * PGSIZE / 1024);
+    // -m 16 查看还算准确，大了不行
+    cprintf("Physical memory: %uK available, base = %uK, extended = %uK\n", npages * PGSIZE / 1024, npages_basemem * PGSIZE / 1024, npages_extmem * PGSIZE / 1024);
+    cprintf("\n");
 }
 
 // --------------------------------------------------------------
@@ -170,11 +168,7 @@ void mem_init(void) {
     //      (ie. perm = PTE_U | PTE_P)
     //    - pages itself -- kernel RW, user NONE
     // Your code goes here:
-    boot_map_region(kern_pgdir,
-                    UPAGES,
-                    PTSIZE,
-                    PADDR(pages),
-                    PTE_U);
+    boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U);
     cprintf("PADDR(pages) %x\n", PADDR(pages));
     //////////////////////////////////////////////////////////////////////
     // Use the physical memory that 'bootstack' refers to as the kernel
@@ -188,11 +182,7 @@ void mem_init(void) {
     //     Permissions: kernel RW, user NONE
     // Your code goes here:
 
-    boot_map_region(kern_pgdir,
-                    KSTACKTOP - KSTKSIZE,
-                    KSTKSIZE,
-                    PADDR(bootstack),
-                    PTE_W);
+    boot_map_region(kern_pgdir, KSTACKTOP - KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);
     cprintf("PADDR(bootstack) %x\n", PADDR(bootstack));
 
     //////////////////////////////////////////////////////////////////////
@@ -204,11 +194,7 @@ void mem_init(void) {
     // Permissions: kernel RW, user NONE
     // Your code goes here:
 
-    boot_map_region(kern_pgdir,
-                    KERNBASE,
-                    -KERNBASE,
-                    0,
-                    PTE_W);
+    boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W);
 
     // Check that the initial page directory has been set up correctly.
     check_kern_pgdir();
