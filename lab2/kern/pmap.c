@@ -211,7 +211,7 @@ void mem_init(void) {
     // mapped the same way by both page tables.
     //
     // If the machine reboots at this point, you've probably set up your
-    // kern_pgdir wrong.
+    // kern_pgdir wrong. NOTE 这里又更新了cr3寄存器
     lcr3(PADDR(kern_pgdir));
 
     check_page_free_list(0);
