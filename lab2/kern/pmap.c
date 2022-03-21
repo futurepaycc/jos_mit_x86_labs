@@ -259,7 +259,7 @@ void page_init(void) {
     // Change the code to reflect this.
     // NB: DO NOT actually touch the physical memory corresponding to
     // free pages!
-    // FIXME [160,290] 直接为空么?
+    // FIXME [160,290] 不可用，不能加入 "空闲" 链表
     // 为基础内存640k构建页表
     size_t i;
     for (i = 1; i < npages_basemem; i++) {//npages_basemem == 160, 从1开始
