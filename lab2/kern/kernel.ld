@@ -52,7 +52,7 @@ SECTIONS
 	.bss : {
 		*(.bss)
 	}
-	/* NOTE: 这里的end指内核的物理地址 */
+	/* NOTE: 这里的end指内核结束的物理地址 */
 	PROVIDE(end = .);
 
 	/DISCARD/ : {
