@@ -24,7 +24,7 @@ static struct PageInfo *page_free_list;     // Free list of physical pages
 static int nvram_read(int r) {
     return mc146818_read(r) | (mc146818_read(r + 1) << 8);
 }
-
+// 0x00000~0xA0000: 640k 称为基础内存basemem, 0x100000以上的部分：这部分叫做extmem
 static void i386_detect_memory(void) {
     size_t npages_extmem;
 
@@ -123,7 +123,7 @@ void mem_init(void) {
 
     //////////////////////////////////////////////////////////////////////
     // create initial page directory.
-
+    // 4k 页目录
     kern_pgdir = (pde_t *)boot_alloc(PGSIZE);
     memset(kern_pgdir, 0, PGSIZE);
 
@@ -143,12 +143,13 @@ void mem_init(void) {
     // each physical page, there is a corresponding struct PageInfo in this
     // array.  'npages' is the number of physical pages in memory.
     // Your code goes here:
-    // 用boot_alloc在内核后面再分配一小段内存，用于存储pages数组——该结构体数组用于登记内存中所有的物理页，每个PageInfo结构体唯一对应一个物理页
-    pages = (struct PageInfo *)boot_alloc(sizeof(struct PageInfo) * npages);
-
-    cprintf("npages: %d\n", npages);
-    cprintf("npages_basemem: %d\n", npages_basemem);
-    cprintf("pages: %x\n", pages);
+    // 4k 页表
+    pages = (struct PageInfo *)boot_alloc(sizeof(struct PageInfo) * npages); //npages为计算得出的物理内存总页数, 这里又分配了4k内存
+    // 0x00000~0xA0000: 640k 称为基础内存basemem, 0x100000以上的部分：这部分叫做extmem
+    // i386_detect_memory求出: npages, npages_basemem
+    cprintf("npages_basemem: %d\n", npages_basemem); //npages_basemem = 160, 基础内存页数
+    cprintf("npages: %d\n", npages);                 //物理内存页数
+    cprintf("pages: %x\n", pages);                   //页表首地址
 
     //////////////////////////////////////////////////////////////////////
     // Now that we've allocated the initial kernel data structures, we set
@@ -257,15 +258,15 @@ void page_init(void) {
     // NB: DO NOT actually touch the physical memory corresponding to
     // free pages!
     size_t i;
-    for (i = 1; i < npages_basemem; i++) {
+    for (i = 1; i < npages_basemem; i++) {//npages_basemem == 160, 从1开始?
         pages[i].pp_ref = 0;
         pages[i].pp_link = page_free_list;
-        page_free_list = &pages[i];
+        page_free_list = &pages[i];       //pages =>页表首地址(0xf011b000) 0or1?
     }
-    int med = (int)ROUNDUP(((char *)pages) + (sizeof(struct PageInfo) * npages) - 0xf0000000, PGSIZE) / PGSIZE;
-    cprintf("pageinfo size: %d\n", sizeof(struct PageInfo));
-    cprintf("%x\n", ((char *)pages) + (sizeof(struct PageInfo) * npages));
-    cprintf("med=%d\n", med);
+    int med = (int)ROUNDUP(((char *)pages) + (sizeof(struct PageInfo) * npages) - 0xf0000000, PGSIZE) / PGSIZE; //pages =>页表首地址(0xf011b000) 0or1?
+    cprintf("pageinfo size: %d\n", sizeof(struct PageInfo));               //PageInfo页信息结构,8字节?
+    cprintf("%x\n", ((char *)pages) + (sizeof(struct PageInfo) * npages)); //npages = 4k个内存页, 4k * PGSIZE(4k) => 16m =>物理内存
+    cprintf("med=%d\n", med); //med => 291 diff=>131+1 => 132个页大小的内存洞?
     for (i = med; i < npages; i++) {
         pages[i].pp_ref = 0;
         pages[i].pp_link = page_free_list;
