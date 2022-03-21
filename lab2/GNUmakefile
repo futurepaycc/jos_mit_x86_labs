@@ -141,10 +141,12 @@ QEMUOPTS += $(QEMUEXTRA)
 .gdbinit: .gdbinit.tmpl
 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
 
-pre-qemu: .gdbinit
+pre-qemu: 
+	@echo hello
 
 qemu: $(IMAGES) pre-qemu
-	$(QEMU) $(QEMUOPTS)
+	# $(QEMU) $(QEMUOPTS)
+	@qemu-system-i386 -drive file=obj/kern/kernel.img,format=raw 
 
 qemu-nox: $(IMAGES) pre-qemu
 	@echo "***"

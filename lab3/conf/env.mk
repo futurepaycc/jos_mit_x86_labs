@@ -18,4 +18,4 @@ GCCPREFIX='i686-elf-'
 # following line and set it to the full path to QEMU.
 #
 # QEMU=
-QEMU=qemu-system-x86_64
+QEMU=qemu-system-i386

@@ -134,17 +134,19 @@ include lib/Makefrag
 include user/Makefrag
 
 
-QEMUOPTS = -hda $(OBJDIR)/kern/kernel.img -serial mon:stdio -gdb tcp::$(GDBPORT)
+# QEMUOPTS = -hda $(OBJDIR)/kern/kernel.img -serial mon:stdio -gdb tcp::$(GDBPORT)
+QEMUOPTS = -drive file=$(OBJDIR)/kern/kernel.img,format=raw
 QEMUOPTS += $(shell if $(QEMU) -nographic -help | grep -q '^-D '; then echo '-D qemu.log'; fi)
 IMAGES = $(OBJDIR)/kern/kernel.img
 QEMUOPTS += $(QEMUEXTRA)
 
-.gdbinit: .gdbinit.tmpl
-	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
+# .gdbinit: .gdbinit.tmpl
+# 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
 
-pre-qemu: .gdbinit
+# pre-qemu: .gdbinit
 
-qemu: $(IMAGES) pre-qemu
+# qemu: $(IMAGES) pre-qemu
+qemu: $(IMAGES)
 	$(QEMU) $(QEMUOPTS)
 
 qemu-nox: $(IMAGES) pre-qemu

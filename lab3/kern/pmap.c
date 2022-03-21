@@ -160,7 +160,7 @@ mem_init(void)
 
 	//////////////////////////////////////////////////////////////////////
 	// Make 'envs' point to an array of size 'NENV' of 'struct Env'.
-	// LAB 3: Your code here.
+	// LAB 3: Your code here. NOTE 初始化进程表
 	envs = (struct Env *) boot_alloc(sizeof(struct Env) * NENV);
 
 	//////////////////////////////////////////////////////////////////////

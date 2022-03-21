@@ -68,6 +68,7 @@ static void check_page_installed_pgdir(void);
 // If we're out of memory, boot_alloc should panic.
 // This function may ONLY be used during initialization,
 // before the page_free_list list has been set up.
+// 2. 初始化内存分配器,初始化后用page_alloca,不再用这个( 找出 下一块未分配的4k对齐的首地址 )
 static void * boot_alloc(uint32_t n) {
     static char *nextfree;  // virtual address of next byte of free memory
     char *result;
@@ -77,6 +78,7 @@ static void * boot_alloc(uint32_t n) {
     // which points to the end of the kernel's bss segment:
     // the first virtual address that the linker did *not* assign
     // to any kernel code or global variables.
+    // NOTE 这里的end在link.ld脚本中，指内核内存的末尾
     if (!nextfree) {
         extern char end[];
         nextfree = ROUNDUP((char *)end, PGSIZE);
@@ -108,6 +110,7 @@ static void * boot_alloc(uint32_t n) {
 //
 // From UTOP to ULIM, the user is allowed to read but not write.
 // Above ULIM the user cannot read or write.
+// 1. 内存分配入口
 void mem_init(void) {
     uint32_t cr0;
     size_t n;
@@ -131,6 +134,8 @@ void mem_init(void) {
     // following line.)
 
     // Permissions: kernel R, user R
+    // 作用是在页目录中创建一个用于访问页目录自身的目录项
+    // ​​PDX(UVPT)=1110 1111 01​​因此地址区间​​0xef400000~0xef7fffff​​共计4MB被映射到​​PADDR(kern_pgdir)​​
     kern_pgdir[PDX(UVPT)] = PADDR(kern_pgdir) | PTE_U | PTE_P;
 
     //////////////////////////////////////////////////////////////////////
@@ -139,6 +144,7 @@ void mem_init(void) {
     // each physical page, there is a corresponding struct PageInfo in this
     // array.  'npages' is the number of physical pages in memory.
     // Your code goes here:
+    // 用boot_alloc在内核后面再分配一小段内存，用于存储pages数组——该结构体数组用于登记内存中所有的物理页，每个PageInfo结构体唯一对应一个物理页
     pages = (struct PageInfo *)boot_alloc(sizeof(struct PageInfo) * npages);
 
     cprintf("npages: %d\n", npages);
@@ -232,7 +238,7 @@ void mem_init(void) {
 // After this is done, NEVER use boot_alloc again.  ONLY use the page
 // allocator functions below to allocate and deallocate physical
 // memory via the page_free_list.
-//
+// NOTE 初始化: page_free_list,元素为PageInfo, 含基础640k,跳过iohole,并标记page0为已用(这里缺少这个操作)
 void page_init(void) {
     // The example code here marks all physical pages as free.
     // However this is not truly the case.  What memory is free?
