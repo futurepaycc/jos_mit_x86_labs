@@ -148,6 +148,9 @@ qemu: $(IMAGES) pre-qemu
 	# $(QEMU) $(QEMUOPTS)
 	@qemu-system-i386 -drive file=obj/kern/kernel.img,format=raw 
 
+bochs:
+	bochs -qf /dev/null  'ata0-master: type=disk, path="obj/kern/kernel.img", mode=flat, cylinders=1, heads=1, spt=1' 'boot: disk' 'megs: 16'
+
 qemu-nox: $(IMAGES) pre-qemu
 	@echo "***"
 	@echo "*** Use Ctrl-a x to exit qemu"

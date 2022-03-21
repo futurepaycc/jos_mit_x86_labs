@@ -78,10 +78,10 @@ static void * boot_alloc(uint32_t n) {
     // which points to the end of the kernel's bss segment:
     // the first virtual address that the linker did *not* assign
     // to any kernel code or global variables.
-    // NOTE 这里的end在link.ld脚本中，指内核内存的末尾
+    // NOTE 这里的end在link.ld脚本中，指内核内存的末尾: 
     if (!nextfree) {
-        extern char end[];
-        nextfree = ROUNDUP((char *)end, PGSIZE);
+        extern char end[];                       //0xf0119bd4 (bochs /u推测值, gdb (char*)end报错)
+        nextfree = ROUNDUP((char *)end, PGSIZE); //0xf011a000, diff = 1068
     }
 
     // Allocate a chunk large enough to hold 'n' bytes, then update
@@ -134,8 +134,7 @@ void mem_init(void) {
     // following line.)
 
     // Permissions: kernel R, user R
-    // 作用是在页目录中创建一个用于访问页目录自身的目录项
-    // ​​PDX(UVPT)=1110 1111 01​​因此地址区间​​0xef400000~0xef7fffff​​共计4MB被映射到​​PADDR(kern_pgdir)​​
+    // 作用是在页目录中创建一个用于访问页目录自身的目录项, PADDR: 逻辑->物理地址映射， 或操作来设置特权位?
     kern_pgdir[PDX(UVPT)] = PADDR(kern_pgdir) | PTE_U | PTE_P;
 
     //////////////////////////////////////////////////////////////////////
