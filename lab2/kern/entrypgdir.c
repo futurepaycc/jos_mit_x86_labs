@@ -11,7 +11,7 @@ pte_t entry_pgtable[NPTENTRIES];
 // virtual addresses [0, 4MB) to physical addresses [0, 4MB); this
 // region is critical for a few instructions in entry.S and then we
 // never use it again.
-//
+// NOTE 内核专用临时页目录与页表，供正式页面内存管理前内核代码使用，否则代码寻址混乱
 // Page directories (and page tables), must start on a page boundary,
 // hence the "__aligned__" attribute.  Also, because of restrictions
 // related to linking and static initializers, we use "x + PTE_P"

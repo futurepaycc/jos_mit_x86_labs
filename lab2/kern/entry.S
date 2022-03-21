@@ -57,7 +57,7 @@ entry:
 
 	# Load the physical address of entry_pgdir into cr3.  entry_pgdir
 	# is defined in entrypgdir.c.
-
+	# NOTE 临时页目录与页表，供内核正式页内存管理前使用
 	# 下面加载内核初始化时定义的临时 4M 虚拟页目录，由RELOC还原出真实物理地址
 	# 1. 物理地址存入cr3, 2. 打开cr0的页控制位
 	movl	$(RELOC(entry_pgdir)), %eax
