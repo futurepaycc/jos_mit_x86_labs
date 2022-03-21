@@ -135,6 +135,8 @@ void mem_init(void) {
 
     // Permissions: kernel R, user R
     // 作用是在页目录中创建一个用于访问页目录自身的目录项, PADDR: 逻辑->物理地址映射， 或操作来设置特权位?
+    // 宏展开: kern_pgdir[((((uintptr_t) (((((0xF0000000 - (4096*1024)) - (4096*1024))) - (4096*1024)))) >> 22) & 0x3FF)] = _paddr("kern/pmap.c", 138, kern_pgdir) | 0x004 | 0x001;
+    // 宏展开: kern_pgdir[957|0x3bd] = _paddr("kern/pmap.c", 138, kern_pgdir) | 0x004 | 0x001;
     kern_pgdir[PDX(UVPT)] = PADDR(kern_pgdir) | PTE_U | PTE_P;
 
     //////////////////////////////////////////////////////////////////////
@@ -238,7 +240,7 @@ void mem_init(void) {
 // After this is done, NEVER use boot_alloc again.  ONLY use the page
 // allocator functions below to allocate and deallocate physical
 // memory via the page_free_list.
-// NOTE 初始化: page_free_list,元素为PageInfo, 含基础640k,跳过iohole,并标记page0为已用(这里缺少这个操作)
+// NOTE 初始化: page_free_list,元素为PageInfo, 含基础640k,跳过iohole,并标记page0为已用(这里缺少这个操作，因为直接从pages[1]开始)
 void page_init(void) {
     // The example code here marks all physical pages as free.
     // However this is not truly the case.  What memory is free?
@@ -257,16 +259,19 @@ void page_init(void) {
     // Change the code to reflect this.
     // NB: DO NOT actually touch the physical memory corresponding to
     // free pages!
+    // FIXME [160,290] 直接为空么?
+    // 为基础内存640k构建页表
     size_t i;
-    for (i = 1; i < npages_basemem; i++) {//npages_basemem == 160, 从1开始?
+    for (i = 1; i < npages_basemem; i++) {//npages_basemem == 160, 从1开始
         pages[i].pp_ref = 0;
         pages[i].pp_link = page_free_list;
-        page_free_list = &pages[i];       //pages =>页表首地址(0xf011b000) 0or1?
+        page_free_list = &pages[i];       //pages =>空闲页表首地址(0xf011b000), index=1
     }
-    int med = (int)ROUNDUP(((char *)pages) + (sizeof(struct PageInfo) * npages) - 0xf0000000, PGSIZE) / PGSIZE; //pages =>页表首地址(0xf011b000) 0or1?
-    cprintf("pageinfo size: %d\n", sizeof(struct PageInfo));               //PageInfo页信息结构,8字节?
-    cprintf("%x\n", ((char *)pages) + (sizeof(struct PageInfo) * npages)); //npages = 4k个内存页, 4k * PGSIZE(4k) => 16m =>物理内存
-    cprintf("med=%d\n", med); //med => 291 diff=>131+1 => 132个页大小的内存洞?
+    // 为kernbease+1m以上的扩展内存构建页表， 要减去页表本身所占用内存, meld => 291, 说明内核+页表占用291*4=1164k字节内存么?
+    int med = (int)ROUNDUP(((char *)pages) + (sizeof(struct PageInfo) * npages) - 0xf0000000, PGSIZE) / PGSIZE; //pages =>页表首地址(0xf011b000)
+    cprintf("pageinfo size: %d\n", sizeof(struct PageInfo));                //PageInfo 页信息结构,8字节?
+    cprintf("%x\n", ((char *)pages) + (sizeof(struct PageInfo) * npages));  //npages => 4k个 内存页, 4k * PGSIZE(4k) => 16m =>物理内存
+    cprintf("med=%d\n", med);                                               //med => 291 diff=>131+1 => 132个页大小的内存洞?
     for (i = med; i < npages; i++) {
         pages[i].pp_ref = 0;
         pages[i].pp_link = page_free_list;
