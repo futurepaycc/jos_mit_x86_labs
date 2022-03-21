@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "gdb_server",
-            "command": "echo 'Starting QEMU' && qemu-system-i386 -m 16 -hda obj/kern/kernel.img -S -s",
+            "command": "echo 'Starting QEMU' && qemu-system-i386 -m 32 -hda obj/kern/kernel.img -S -s",
             "type": "shell",
             "problemMatcher": {
                 "pattern": {

@@ -30,13 +30,13 @@ static void i386_detect_memory(void) {
 
     // Use CMOS calls to measure available base & extended memory.
     // (CMOS calls return results in kilobytes.)
-    npages_basemem = (nvram_read(NVRAM_BASELO) * 1024) / PGSIZE;
-    npages_extmem = (nvram_read(NVRAM_EXTLO) * 1024) / PGSIZE;
+    npages_basemem = (nvram_read(NVRAM_BASELO) * 1024) / PGSIZE;    //基础1M址内640k可用
+    npages_extmem = (nvram_read(NVRAM_EXTLO) * 1024) / PGSIZE;      //所有物理内存-1M部分
 
     // Calculate the number of physical pages available in both base
     // and extended memory.
     if (npages_extmem)
-        npages = (EXTPHYSMEM / PGSIZE) + npages_extmem;
+        npages = (EXTPHYSMEM / PGSIZE) + npages_extmem;             //npages <=> 所有物理内存/4k
     else
         npages = npages_basemem;
     // -m 16 查看还算准确，大了不行
@@ -168,7 +168,7 @@ void mem_init(void) {
 
     //////////////////////////////////////////////////////////////////////
     // Now we set up virtual memory
-
+    // FIXME 下面才真正开始: 分区域映射虚拟内存和物理内存?
     //////////////////////////////////////////////////////////////////////
     // Map 'pages' read-only by the user at linear address UPAGES
     // Permissions:
