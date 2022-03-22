@@ -211,9 +211,9 @@ void mem_init(void) {
     // page table we just created.	Our instruction pointer should be
     // somewhere between KERNBASE and KERNBASE+4MB right now, which is
     // mapped the same way by both page tables.
-    //
+    // NOTE 从临时 页目录页表 切换到全量 页目录页表
     // If the machine reboots at this point, you've probably set up your
-    // kern_pgdir wrong. NOTE 这里又更新了cr3寄存器
+    // kern_pgdir wrong.
     lcr3(PADDR(kern_pgdir));
 
     check_page_free_list(0);
@@ -409,7 +409,7 @@ static void boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t 
 //
 // Hint: The TA solution is implemented using pgdir_walk, page_remove,
 // and page2pa.
-//
+// NOTE 核心函数，将pp对应的物理页面分配给线性地址va
 int page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm) {
     pte_t *pte = pgdir_walk(pgdir, va, 1);  // create on demand
     if (!pte)                               // page table not allocated
