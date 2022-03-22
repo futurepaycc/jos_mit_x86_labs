@@ -143,8 +143,9 @@ IMAGES = $(OBJDIR)/kern/kernel.img
 QEMUOPTS += -smp $(CPUS)
 QEMUOPTS += $(QEMUEXTRA)
 
-.gdbinit: .gdbinit.tmpl
-	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
+.gdbinit:
+	# sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
+	@echo -n ""
 
 pre-qemu: .gdbinit
 
