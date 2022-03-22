@@ -143,7 +143,9 @@ QEMUOPTS += $(QEMUEXTRA)
 # .gdbinit: .gdbinit.tmpl
 # 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
 
-# pre-qemu: .gdbinit
+# enable make run-evilhello, it will disable breakpoint in hello.c, ignore it
+pre-qemu: 
+	@echo ""
 
 # qemu: $(IMAGES) pre-qemu
 qemu: $(IMAGES)
